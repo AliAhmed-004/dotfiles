@@ -47,4 +47,7 @@ end
 -- =================
 
 -- Refresh Waybar
-hl.bind(mainMod .. " + SHIFT + W", hl.dsp.exec_cmd("pkill waybar; waybar & disown"))
+hl.bind(
+    mainMod .. " + SHIFT + W",
+    hl.dsp.exec_cmd("pkill -x waybar; waybar")
+)
