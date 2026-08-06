@@ -28,10 +28,10 @@ PanelWindow {
     color: "transparent"
 
     // ─── Design Tokens ──────────────────────────────────────────────────────
-    readonly property int barHeight:    36
+    readonly property int barHeight:    26
     readonly property int barMarginV:   8      // gap from screen top
     readonly property int barMarginH:   120    // shrink from screen sides
-    readonly property int pillRadius:   18     // full pill = height/2
+    readonly property int pillRadius:   10     // full pill = height/2
     readonly property int innerPad:     10     // padding inside pill sections
     readonly property int sectionGap:   6      // gap between the three sections
     readonly property int wsSize:       26     // workspace dot diameter
