@@ -1,11 +1,11 @@
 import Quickshell
-import Quickshell.Bluetooth
+import Quickshell.Io
 import QtQuick
 import QtQuick.Layouts
+import QtQuick.Controls
 
 // ─── StatusModule ────────────────────────────────────────────────────────────
 // Right side: WiFi · Bluetooth · Notifications · Battery
-// Uses Nerd Font icons — requires JetBrainsMono Nerd Font (or any Nerd Font)
 // ─────────────────────────────────────────────────────────────────────────────
 
 Item {
@@ -14,17 +14,32 @@ Item {
     implicitWidth:  statusRow.implicitWidth
     implicitHeight: statusRow.implicitHeight
 
-    // ── Bluetooth state from native QS module ────────────────────────────────
-    // Show connected if any device is connected across all adapters
-    readonly property bool btConnected: {
-        for (var i = 0; i < Bluetooth.connectedDevices.length; i++) {
-            if (Bluetooth.connectedDevices[i].connected) return true
+    // ── Bluetooth state via bluetoothctl ─────────────────────────────────────
+    property bool btEnabled:   false
+    property bool btConnected: false
+    property int  _btLine:     0
+
+    Process {
+        id: btProc
+        command: ["sh", "-c", "bluetoothctl show | grep -c 'Powered: yes'; bluetoothctl info 2>/dev/null | grep -c 'Connected: yes'"]
+        stdout: SplitParser {
+            onRead: line => {
+                var n = parseInt(line.trim())
+                if (statusRoot._btLine === 0)      statusRoot.btEnabled   = n > 0
+                else if (statusRoot._btLine === 1)  statusRoot.btConnected = n > 0
+                statusRoot._btLine++
+            }
         }
-        return false
+        onRunningChanged: if (!running) statusRoot._btLine = 0
+        Component.onCompleted: running = true
     }
 
-    readonly property bool btEnabled: Bluetooth.adapters.length > 0
-        && Bluetooth.adapters[0].powered
+    Timer {
+        interval: 8000
+        running:  true
+        repeat:   true
+        onTriggered: btProc.running = true
+    }
 
     RowLayout {
         id: statusRow
@@ -38,34 +53,31 @@ Item {
 
             Text {
                 id: wifiIcon
-                // Nerd Font wifi icons by signal strength
                 text: {
-                    if (!root.wifiConnected) return "\udb82\udce0"  // 󰰠 no wifi
-                    if (root.wifiStrength >= 75) return "\udb82\udccc"  // 󰰌 full
-                    if (root.wifiStrength >= 50) return "\udb82\udccb"  // 󰰋 med-high
-                    if (root.wifiStrength >= 25) return "\udb82\udcca"  // 󰰊 med-low
-                    return "\udb82\udcc9"                               // 󰰉 low
+                    if (!root.wifiConnected)          return "\udb82\udce0"
+                    if (root.wifiStrength >= 75)      return "\udb82\udccc"
+                    if (root.wifiStrength >= 50)      return "\udb82\udccb"
+                    if (root.wifiStrength >= 25)      return "\udb82\udcca"
+                    return "\udb82\udcc9"
                 }
                 color: root.wifiConnected
                     ? (root.wifiStrength >= 50 ? root.colGreen : root.colYellow)
                     : root.colMuted
-                font {
-                    family:    root.font
-                    pixelSize: root.fontSize + 2
-                }
+                font { family: root.font; pixelSize: root.fontSize + 2 }
+
                 ToolTip.visible: wifiMouse.containsMouse
                 ToolTip.text:    root.wifiConnected
                     ? root.wifiSsid + "  " + root.wifiStrength + "%"
                     : "Not connected"
-                ToolTip.delay:   600
+                ToolTip.delay: 600
             }
 
             MouseArea {
                 id: wifiMouse
-                anchors.fill:  parent
-                hoverEnabled:  true
-                cursorShape:   Qt.PointingHandCursor
-                onClicked:     Quickshell.execDetached(["nmtui"])
+                anchors.fill: parent
+                hoverEnabled: true
+                cursorShape:  Qt.PointingHandCursor
+                onClicked:    Quickshell.execDetached(["nmtui"])
             }
         }
 
@@ -76,21 +88,19 @@ Item {
 
             Text {
                 id: btIcon
-                text:  statusRoot.btConnected  ? "\uf294"   // 󰊔 connected
-                     : statusRoot.btEnabled    ? "\uf293"   //  enabled
-                     :                           "\uf294"   //  disabled (same icon, dim)
+                text:  statusRoot.btConnected ? "\uf294"
+                     : statusRoot.btEnabled   ? "\uf293"
+                     :                          "\uf294"
                 color: statusRoot.btConnected ? root.colActive
                      : statusRoot.btEnabled   ? root.colFg
                      :                          root.colMuted
-                font {
-                    family:    root.font
-                    pixelSize: root.fontSize + 2
-                }
+                font { family: root.font; pixelSize: root.fontSize + 2 }
+
                 ToolTip.visible: btMouse.containsMouse
-                ToolTip.text:    statusRoot.btConnected  ? "Bluetooth: connected"
-                               : statusRoot.btEnabled    ? "Bluetooth: on"
-                               :                           "Bluetooth: off"
-                ToolTip.delay:   600
+                ToolTip.text:    statusRoot.btConnected ? "Bluetooth: connected"
+                               : statusRoot.btEnabled   ? "Bluetooth: on"
+                               :                          "Bluetooth: off"
+                ToolTip.delay: 600
             }
 
             MouseArea {
@@ -98,22 +108,24 @@ Item {
                 anchors.fill: parent
                 hoverEnabled: true
                 cursorShape:  Qt.PointingHandCursor
-                // Toggle power on first adapter
                 onClicked: {
-                    if (Bluetooth.adapters.length > 0) {
-                        Bluetooth.adapters[0].powered = !Bluetooth.adapters[0].powered
-                    }
+                    var cmd = statusRoot.btEnabled ? ["bluetoothctl", "power", "off"]
+                                                   : ["bluetoothctl", "power", "on"]
+                    Quickshell.execDetached(cmd)
+                    btRefreshDelay.running = true
                 }
+            }
+
+            Timer {
+                id: btRefreshDelay
+                interval: 1500
+                repeat:   false
+                onTriggered: btProc.running = true
             }
         }
 
         // Thin separator
-        Rectangle {
-            width:   1
-            height:  14
-            color:   root.colMuted
-            opacity: 0.35
-        }
+        Rectangle { width: 1; height: 14; color: root.colMuted; opacity: 0.35 }
 
         // ── Notifications (swaync) ────────────────────────────────────────────
         Item {
@@ -125,59 +137,42 @@ Item {
                 spacing: 3
 
                 Text {
-                    id: notifIcon
-                    // Bell / Bell-off / Bell with badge
-                    text:  root.dndEnabled    ? "\udb80\udf53"   // 󰅓 DND bell
-                         : root.notifCount > 0 ? "\udb80\udf50"  // 󰅐 bell with dot
-                         :                       "\udb80\udf55"  // 󰅕 bell clear
+                    text:  root.dndEnabled     ? "\udb80\udf53"
+                         : root.notifCount > 0  ? "\udb80\udf50"
+                         :                        "\udb80\udf55"
                     color: root.dndEnabled     ? root.colYellow
-                         : root.notifCount > 0 ? root.colPeach
-                         :                       root.colMuted
-                    font {
-                        family:    root.font
-                        pixelSize: root.fontSize + 2
-                    }
+                         : root.notifCount > 0  ? root.colPeach
+                         :                        root.colMuted
+                    font { family: root.font; pixelSize: root.fontSize + 2 }
                 }
 
-                // Badge count — only show when > 0 and not in DND
                 Text {
                     visible: root.notifCount > 0 && !root.dndEnabled
                     text:    root.notifCount > 9 ? "9+" : root.notifCount.toString()
                     color:   root.colPeach
-                    font {
-                        family:    root.font
-                        pixelSize: root.fontSize - 1
-                        bold:      true
-                    }
+                    font { family: root.font; pixelSize: root.fontSize - 1; bold: true }
                 }
             }
 
             MouseArea {
-                anchors.fill: parent
-                hoverEnabled: true
-                cursorShape:  Qt.PointingHandCursor
-                // Left click: open swaync panel; right click: toggle DND
-                onClicked: (mouse) => {
-                    if (mouse.button === Qt.RightButton) {
-                        Quickshell.execDetached(["swaync-client", "-d"])
-                    } else {
-                        Quickshell.execDetached(["swaync-client", "-t"])
-                    }
-                }
+                anchors.fill:    parent
+                hoverEnabled:    true
+                cursorShape:     Qt.PointingHandCursor
                 acceptedButtons: Qt.LeftButton | Qt.RightButton
+                onClicked: (mouse) => {
+                    if (mouse.button === Qt.RightButton)
+                        Quickshell.execDetached(["swaync-client", "-d"])
+                    else
+                        Quickshell.execDetached(["swaync-client", "-t"])
+                }
                 ToolTip.visible: containsMouse
-                ToolTip.text:   "Left: toggle panel · Right: toggle DND"
-                ToolTip.delay:  600
+                ToolTip.text:    "Left: panel · Right: DND"
+                ToolTip.delay:   600
             }
         }
 
         // Thin separator
-        Rectangle {
-            width:   1
-            height:  14
-            color:   root.colMuted
-            opacity: 0.35
-        }
+        Rectangle { width: 1; height: 14; color: root.colMuted; opacity: 0.35 }
 
         // ── Battery ──────────────────────────────────────────────────────────
         Item {
@@ -189,37 +184,29 @@ Item {
                 spacing: 4
 
                 Text {
-                    id: batIcon
                     text: {
-                        if (root.batteryCharging) return "\udb80\udc84"  // 󰂄 charging
-                        if (root.batteryLevel >= 90) return "\udb80\udc79"  // 󰂹 full
-                        if (root.batteryLevel >= 70) return "\udb80\udc78"  // 󰂸
-                        if (root.batteryLevel >= 50) return "\udb80\udc77"  // 󰂷
-                        if (root.batteryLevel >= 30) return "\udb80\udc76"  // 󰂶
-                        if (root.batteryLevel >= 15) return "\udb80\udc75"  // 󰂵 low
-                        return "\udb80\udc74"                               // 󰂴 critical
+                        if (root.batteryCharging)    return "\udb80\udc84"
+                        if (root.batteryLevel >= 90) return "\udb80\udc79"
+                        if (root.batteryLevel >= 70) return "\udb80\udc78"
+                        if (root.batteryLevel >= 50) return "\udb80\udc77"
+                        if (root.batteryLevel >= 30) return "\udb80\udc76"
+                        if (root.batteryLevel >= 15) return "\udb80\udc75"
+                        return "\udb80\udc74"
                     }
-                    color: root.batteryCharging  ? root.colGreen
-                         : root.batteryLevel > 40 ? root.colFg
-                         : root.batteryLevel > 20 ? root.colYellow
-                         :                          root.colRed
-                    font {
-                        family:    root.font
-                        pixelSize: root.fontSize + 2
-                    }
+                    color: root.batteryCharging   ? root.colGreen
+                         : root.batteryLevel > 40  ? root.colFg
+                         : root.batteryLevel > 20  ? root.colYellow
+                         :                           root.colRed
+                    font { family: root.font; pixelSize: root.fontSize + 2 }
                 }
 
                 Text {
                     text:  root.batteryLevel + "%"
-                    color: root.batteryCharging  ? root.colGreen
-                         : root.batteryLevel > 40 ? root.colFg
-                         : root.batteryLevel > 20 ? root.colYellow
-                         :                          root.colRed
-                    font {
-                        family:    root.font
-                        pixelSize: root.fontSize
-                        bold:      root.batteryLevel <= 20
-                    }
+                    color: root.batteryCharging   ? root.colGreen
+                         : root.batteryLevel > 40  ? root.colFg
+                         : root.batteryLevel > 20  ? root.colYellow
+                         :                           root.colRed
+                    font { family: root.font; pixelSize: root.fontSize; bold: root.batteryLevel <= 20 }
                 }
             }
         }

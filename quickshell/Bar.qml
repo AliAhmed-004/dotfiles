@@ -19,10 +19,10 @@ PanelWindow {
     anchors.right: true
 
     // Pill height + vertical gap from screen edge
-    implicitHeight: barHeight + barMarginV * 2
+    implicitHeight: barHeight + barMarginV 
 
-    // No exclusion zone — windows slide under it like a real floating bar
-    exclusionMode: ExclusionMode.Ignore
+    // Reserve space so windows don't overlap the bar
+    exclusionMode: ExclusionMode.Auto
 
     // Transparent window background; pill draws its own rectangle
     color: "transparent"
