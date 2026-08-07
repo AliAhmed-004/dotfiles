@@ -1,0 +1,6 @@
+module PillBar
+
+Bar              1.0 Bar.qml
+WorkspacesModule 1.0 WorkspacesModule.qml
+ClockModule      1.0 ClockModule.qml
+StatusModule     1.0 StatusModule.qml

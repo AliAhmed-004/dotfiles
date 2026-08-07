@@ -1,3 +1,5 @@
 hyprland
 nvim
+quickshell
+
 
