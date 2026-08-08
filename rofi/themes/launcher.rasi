@@ -11,7 +11,8 @@
 
 window {
     background-color: @bg;
-    border:           @border solid @accent;
+    border:           2;          /* thickness as plain integer */
+    border-color:     @accent;
     border-radius:    @radius;
     width:            35%;
     padding:          12px;
@@ -45,9 +46,23 @@ element {
     border-radius: @radius;
 }
 
-element selected {
+element-text {
+    background-color: inherit;
+    text-color:       inherit;
+}
+
+element-icon {
+    background-color: inherit;
+}
+
+element.normal.normal {
+    background-color: transparent;
+    text-color:       @fg;
+}
+
+element.selected.normal {
     background-color: @accent;
-    text-color:       @bg;
+    text-color:       @bg;      /* dark text on your light blue */
 }
 
 element-icon { size: 24px; }
