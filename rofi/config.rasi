@@ -1,11 +1,13 @@
 configuration {
     modi:           "drun,run,filebrowser";
     show-icons:     true;
-    icon-theme:     "Papirus";   /* swap for yours */
+    icon-theme:     "Papirus";
     display-drun:   " Apps";
     display-run:    " Run";
     drun-display-format: "{name}";
     font:           "JetBrainsMono Nerd Font 12";
+    scroll-method:  1;    /* continuous scrolling */
+    cycle:          true; /* wrap around at top/bottom */
 }
 
 @theme "~/.dotfiles/rofi/themes/launcher.rasi"
