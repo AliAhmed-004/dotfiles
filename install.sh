@@ -15,5 +15,6 @@ ln -sfn "$HOME/.dotfiles/nvim" "$HOME/.config/nvim"
 ln -sfn "$HOME/.dotfiles/waybar" "$HOME/.config/waybar"
 ln -sfn "$HOME/.dotfiles/wallpapers/" "$HOME/.config/wallpapers"
 ln -sfn "$HOME/.dotfiles/quickshell" "$HOME/.config/quickshell"
+ln -sfn "$HOME/.dotfiles/rofi/" "$HOME/.config/rofi"
 
 echo "========== Symlinks Created =========="
