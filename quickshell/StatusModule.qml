@@ -77,7 +77,7 @@ Item {
                 anchors.fill: parent
                 hoverEnabled: true
                 cursorShape:  Qt.PointingHandCursor
-                onClicked:    Quickshell.execDetached(["nmtui"])
+                onClicked: Quickshell.execDetached(["kitty", "--title", "impala", "impala"])
             }
         }
 
