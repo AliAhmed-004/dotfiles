@@ -1,0 +1,26 @@
+"$schema" = 'https://starship.rs/config-schema.json'
+
+format = '$all$directory$character'
+
+add_newline = true
+
+[character]
+success_symbol = '[➜](bold green) '
+error_symbol = '[✗](bold red) '
+
+[package]
+disabled = true
+
+[directory]
+truncation_length = 3
+truncation_symbol = '…/'
+truncate_to_repo = true
+
+[dart]
+format = '[$symbol($version )]($style)'
+
+
+[git_branch]
+format = 'on [$branch]($style) '
+always_show_remote = false
+

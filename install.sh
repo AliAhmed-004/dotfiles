@@ -9,6 +9,8 @@ echo "========== Packages Installed =========="
 # Create symlinks
 echo "========== Creating Symlinks =========="
 
+ln -sfn "$HOME/.dotfiles/.bashrc" "$HOME/.bashrc"
+
 mkdir -p "$HOME/.config"
 ln -sfn "$HOME/.dotfiles/hypr" "$HOME/.config/hypr"
 ln -sfn "$HOME/.dotfiles/nvim" "$HOME/.config/nvim"
@@ -16,5 +18,6 @@ ln -sfn "$HOME/.dotfiles/waybar" "$HOME/.config/waybar"
 ln -sfn "$HOME/.dotfiles/wallpapers/" "$HOME/.config/wallpapers"
 ln -sfn "$HOME/.dotfiles/quickshell" "$HOME/.config/quickshell"
 ln -sfn "$HOME/.dotfiles/rofi/" "$HOME/.config/rofi"
+ln -sfn "$HOME/.dotfiles/starship.toml" "$HOME/.config/starship.toml"
 
 echo "========== Symlinks Created =========="
