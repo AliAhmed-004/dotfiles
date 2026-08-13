@@ -71,3 +71,22 @@ end
 
 -- Refresh Waybar
 hl.bind(mainMod .. " + SHIFT + W", hl.dsp.exec_cmd("pkill -x waybar; waybar"))
+
+-- ======================
+-- Workspace Binds
+-- ======================
+
+-- SUPER + [1-0]: switch to workspaces 1–10
+-- SUPER + SHIFT + [1-0]: move window to workspaces 1–10
+for i = 1, 10 do
+	local key = tostring(i % 10) -- i=10 → "0"
+	hl.bind(mainMod .. " + " .. key, hl.dsp.focus({ workspace = i }))
+	hl.bind(mainMod .. " + SHIFT + " .. key, hl.dsp.window.move({ workspace = i }))
+end
+
+-- SUPER + F1-F10: switch to workspaces 11–20
+-- SUPER + SHIFT + F1-F10: move window to workspaces 11–20
+for i = 1, 10 do
+	hl.bind(mainMod .. " + F" .. i, hl.dsp.focus({ workspace = 10 + i }))
+	hl.bind(mainMod .. " + SHIFT + F" .. i, hl.dsp.window.move({ workspace = 10 + i }))
+end
