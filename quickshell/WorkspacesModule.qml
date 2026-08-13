@@ -23,18 +23,25 @@ Item {
     // - Also show any WS above minWs that has windows OR is currently focused
     readonly property var visibleIds: {
         var ids = []
-        var max = minWs
+        var activeWsIds = new Set()
 
         for (var i = 0; i < Hyprland.workspaces.values.length; i++) {
-            var ws = Hyprland.workspaces.values[i]
-            if (ws.id > max) max = ws.id
+            activeWsIds.add(Hyprland.workspaces.values[i].id)
         }
-        var focused = Hyprland.focusedWorkspace?.id ?? 1
-        if (focused > max) max = focused
 
-        for (var j = 1; j <= max; j++) {
+        var focused = Hyprland.focusedWorkspace?.id ?? 1
+
+        for (var j = 1; j <= minWs; j++) {
             ids.push(j)
         }
+
+        // Above minWs: only if occupied or focused
+        for (var k = minWs + 1; k <= 20; k++) {
+            if (activeWsIds.has(k) || focused === k) {
+                ids.push(k)
+            }
+        }
+
         return ids
     }
 
