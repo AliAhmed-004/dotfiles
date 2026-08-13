@@ -1,0 +1,69 @@
+* {
+    bg:      #0d0d0d;
+    fg:      #e0e0e0;
+    accent:  #89b4fa;   /* change to match your color scheme */
+    border:  2px;
+    radius:  8px;
+
+    background-color: transparent;
+    text-color:       @fg;
+}
+
+window {
+    background-color: @bg;
+    border:           2;          /* thickness as plain integer */
+    border-color:     @accent;
+    border-radius:    @radius;
+    width:            35%;
+    padding:          12px;
+}
+
+mainbox { children: [inputbar, listview]; }
+
+inputbar {
+    background-color: @bg;
+    border-radius:    @radius;
+    padding:          8px 12px;
+    margin:           0 0 8px 0;
+    children:         [prompt, entry];
+}
+
+prompt {
+    text-color: @accent;
+    padding:    0 8px 0 0;
+}
+
+entry { placeholder: "Search apps..."; }
+
+listview {
+    lines:   8;
+    columns: 1;
+    spacing: 4px;
+}
+
+element {
+    padding:       8px 12px;
+    border-radius: @radius;
+}
+
+element-text {
+    background-color: inherit;
+    text-color:       inherit;
+}
+
+element-icon {
+    background-color: inherit;
+}
+
+element.normal.normal {
+    background-color: transparent;
+    text-color:       @fg;
+}
+
+element.selected.normal {
+    background-color: @accent;
+    text-color:       @bg;      /* dark text on your light blue */
+}
+
+element-icon { size: 24px; }
+element-text { margin: 0 0 0 8px; }
