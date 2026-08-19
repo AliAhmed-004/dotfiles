@@ -8,6 +8,7 @@ alias ls='eza -l -h --icons '
 alias grep='grep --color=auto'
 alias glog='git log --oneline --graph'
 alias hyprload='hyprctl reload'
+alias gnm='git branch --no-merge main'
 PS1='[\u@\h \W]\$ '
 
 # Copolot CLI
